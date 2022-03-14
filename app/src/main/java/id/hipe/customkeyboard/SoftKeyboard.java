@@ -16,17 +16,25 @@
 
 package id.hipe.customkeyboard;
 
+import android.Manifest;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.inputmethodservice.InputMethodService;
 import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.KeyboardView;
 import android.os.IBinder;
 import android.text.InputType;
 import android.text.method.MetaKeyKeyListener;
+import android.util.Base64;
 import android.util.Log;
+import android.util.SparseArray;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.Window;
 import android.view.inputmethod.CompletionInfo;
@@ -39,9 +47,25 @@ import android.view.textservice.SpellCheckerSession;
 import android.view.textservice.SuggestionsInfo;
 import android.view.textservice.TextInfo;
 import android.view.textservice.TextServicesManager;
+import android.widget.TextView;
 
+import androidx.core.app.ActivityCompat;
+
+import com.google.android.gms.common.util.ArrayUtils;
+import com.google.android.gms.vision.CameraSource;
+import com.google.android.gms.vision.Detector;
+import com.google.android.gms.vision.barcode.Barcode;
+import com.google.android.gms.vision.barcode.BarcodeDetector;
+
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import javax.crypto.Cipher;
+import javax.crypto.spec.GCMParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 
 /**
  * Example of writing an input method for a soft keyboard.  This code is
@@ -81,7 +105,7 @@ public class SoftKeyboard extends InputMethodService
     private LatinKeyboard mSymbolsKeyboard;
     private LatinKeyboard mSymbolsShiftedKeyboard;
     private LatinKeyboard mQwertyKeyboard;
-    
+
     private LatinKeyboard mCurKeyboard;
     
     private String mWordSeparators;
@@ -89,7 +113,12 @@ public class SoftKeyboard extends InputMethodService
     private SpellCheckerSession mScs;
     private List<String> mSuggestions;
 
+    private SurfaceView surfaceView;
+    private BarcodeDetector barcodeDetector;
+    private CameraSource cameraSource;
 
+    private TextView barcodeText;
+    private String barcodeData;
 
     /**
      * Main initialization of the input method component.  Be sure to call
@@ -524,7 +553,7 @@ public class SoftKeyboard extends InputMethodService
     // Implementation of KeyboardViewListener
 
     public void onKey(int primaryCode, int[] keyCodes) {
-        Log.d("Test","KEYCODE: " + primaryCode);
+        Log.d("Test", "KEYCODE: " + primaryCode);
         if (isWordSeparator(primaryCode)) {
             // Handle separator
             if (mComposing.length() > 0) {
@@ -532,6 +561,8 @@ public class SoftKeyboard extends InputMethodService
             }
             sendKey(primaryCode);
             updateShiftKeyState(getCurrentInputEditorInfo());
+        } else if (primaryCode == -1000) {
+            handleQRScan();
         } else if (primaryCode == Keyboard.KEYCODE_DELETE) {
             handleBackspace();
         } else if (primaryCode == Keyboard.KEYCODE_SHIFT) {
@@ -616,6 +647,141 @@ public class SoftKeyboard extends InputMethodService
             keyDownUp(KeyEvent.KEYCODE_DEL);
         }
         updateShiftKeyState(getCurrentInputEditorInfo());
+    }
+
+    private void handleQRScan() {
+        View keyboardView = getLayoutInflater().inflate(R.layout.keyboard_camera, null);
+        setInputView(keyboardView);
+        surfaceView = keyboardView.findViewById(R.id.surface_view);
+        barcodeText = keyboardView.findViewById(R.id.barcode_text);
+
+        initialiseDetectorsAndSources();
+    }
+
+    public void clearData() {
+        barcodeData = "";
+        if (barcodeText != null)
+            barcodeText.setText("Waiting for scan");
+        if (cameraSource != null)
+            cameraSource.stop();
+        if (surfaceView != null) {
+            // clear the camera
+            surfaceView.setVisibility(View.INVISIBLE);
+            surfaceView.setVisibility(View.VISIBLE);
+        }
+    }
+
+    public void scanOnClick(View view) {
+        clearData();
+        try {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                cameraSource.start(surfaceView.getHolder());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void useOnClick(View view) {
+        setInputView(onCreateInputView());
+    }
+
+    private void initialiseDetectorsAndSources() {
+        barcodeDetector = new BarcodeDetector.Builder(this)
+                .setBarcodeFormats(Barcode.ALL_FORMATS)
+                .build();
+
+        cameraSource = new CameraSource.Builder(this, barcodeDetector)
+                // .setRequestedPreviewSize(1920, 1080)
+                .setAutoFocusEnabled(true) //you should add this feature
+                .build();
+
+        surfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
+            @Override
+            public void surfaceCreated(SurfaceHolder holder) { }
+
+            @Override
+            public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) { }
+
+            @Override
+            public void surfaceDestroyed(SurfaceHolder holder) {
+                clearData();
+            }
+        });
+
+
+        barcodeDetector.setProcessor(new Detector.Processor<Barcode>() {
+            @Override
+            public void release() { }
+
+            @Override
+            public void receiveDetections(Detector.Detections<Barcode> detections) {
+                final SparseArray<Barcode> barcodes = detections.getDetectedItems();
+                if (barcodes.size() != 0) {
+                    barcodeText.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            cameraSource.stop();
+//                            surfaceView.performHapticFeedback(HapticFeedbackConstants.CONFIRM);
+
+                            barcodeData = barcodes.valueAt(0).displayValue;
+                            barcodeData = parseScannedData(barcodeData);
+
+                            SharedPreferences sharedPref = getSharedPref();
+                            boolean show_data = sharedPref.getBoolean("show_data", true);
+                            if (show_data){
+                                barcodeText.setText(barcodeData);
+                                InputConnection ic = getCurrentInputConnection();
+                                if (ic != null){
+                                    ic.commitText(barcodeData, 1);
+                                }
+                            }
+                            else
+                                barcodeText.setText("***");
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    final int TAG_SIZE = 16;
+
+    public SharedPreferences getSharedPref() {
+        return getApplicationContext().getSharedPreferences("data", Context.MODE_PRIVATE);
+    }
+
+    private String parseScannedData(String scanned_data) {
+        SharedPreferences sharedPref = getSharedPref();
+        String key = sharedPref.getString("key", "");
+        String prefix = "mydata:";
+        if (scanned_data.startsWith(prefix)) {
+            String data = scanned_data.substring(prefix.length());
+            try {
+                byte[] data_concat = Base64.decode(data, Base64.DEFAULT);
+                byte[] tag = Arrays.copyOfRange(data_concat, 0, TAG_SIZE);
+                byte[] nonce = Arrays.copyOfRange(data_concat, TAG_SIZE, 2 * TAG_SIZE);
+                byte[] text = Arrays.copyOfRange(data_concat, 2 * TAG_SIZE, data_concat.length);
+
+                byte[] key_bytes = Base64.decode(key, Base64.DEFAULT);
+
+                Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+                SecretKeySpec keySpec = new SecretKeySpec(key_bytes, "AES");
+                GCMParameterSpec spec = new GCMParameterSpec(TAG_SIZE * 8, nonce);
+                cipher.init(Cipher.DECRYPT_MODE, keySpec, spec);
+
+                byte[] decrypt_array = ArrayUtils.concatByteArrays(text, tag);
+                byte[] decodedData = cipher.doFinal(decrypt_array);
+                String decryptedText = new String(decodedData, "UTF-8");
+                scanned_data = decryptedText;
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        return scanned_data;
     }
 
     private void handleShift() {

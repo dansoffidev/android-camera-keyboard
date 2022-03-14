@@ -2,6 +2,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools" package="id.hipe.customkeyboard">
 
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.WRITE_SETTINGS"
+        tools:ignore="ProtectedPermissions" />
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="true" />
+
     <application android:label="@string/ime_name" tools:ignore="GoogleAppIndexingWarning"
         android:allowBackup="true"
         android:hardwareAccelerated="true"
@@ -10,6 +17,9 @@
         android:roundIcon="@mipmap/ic_launcher"
         android:theme="@style/Theme.AppCompat"
         android:supportsRtl="true">
+        <meta-data
+            android:name="com.google.android.gms.vision.DEPENDENCIES"
+            android:value="barcode" />
         <activity android:name="id.hipe.sampleapp.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
