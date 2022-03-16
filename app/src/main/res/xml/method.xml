@@ -21,7 +21,7 @@
 <!-- for the Search Manager. -->
 
 <input-method xmlns:android="http://schemas.android.com/apk/res/android"
-        android:settingsActivity="id.hipe.customkeyboard.ImePreferences"
+        android:settingsActivity="com.sophie.customkeyboard.ImePreferences"
         android:supportsSwitchingToNextInputMethod="true"
 >
     <subtype

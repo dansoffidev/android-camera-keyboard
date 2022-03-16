@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" package="id.hipe.customkeyboard">
+    xmlns:tools="http://schemas.android.com/tools" package="com.sophie.customkeyboard">
 
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WRITE_SETTINGS"
         tools:ignore="ProtectedPermissions" />
+    <permission android:name="android.permission.FLASHLIGHT"
+             android:permissionGroup="android.permission-group.HARDWARE_CONTROLS"
+             android:protectionLevel="normal"/>
     <uses-feature
         android:name="android.hardware.camera"
         android:required="true" />
@@ -20,7 +23,7 @@
         <meta-data
             android:name="com.google.android.gms.vision.DEPENDENCIES"
             android:value="barcode" />
-        <activity android:name="id.hipe.sampleapp.MainActivity">
+        <activity android:name="com.sophie.sampleapp.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
@@ -28,7 +31,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ImePreferences"
+            android:name="com.sophie.customkeyboard.ImePreferences"
             android:label="@string/settings_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -36,7 +39,7 @@
         </activity>
 
         <service
-            android:name=".SoftKeyboard"
+            android:name="com.sophie.customkeyboard.SoftKeyboard"
             android:permission="android.permission.BIND_INPUT_METHOD">
             <intent-filter>
                 <action android:name="android.view.InputMethod"/>
