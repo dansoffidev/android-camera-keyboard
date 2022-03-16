@@ -45,6 +45,7 @@
     <string name="keyboard">Teclado</string>
     <string name="torch">Torch</string>
     <string name="clear">Actualizar</string>
-    <string name="delete">Delete</string>
+    <string name="delete">Borrar</string>
     <string name="backSpace">Backspace</string>
+    <string name="enter">Enter</string>
 </resources>

@@ -701,10 +701,10 @@ public class SoftKeyboard extends InputMethodService
         clearData();
     }
 
-    public void backSpaceOnClick(View view) {
+    public void enterOnClick(View view) {
         InputConnection ic = getCurrentInputConnection();
         if (ic != null){
-            ic.commitText(" ", 1);
+            ic.commitText(System.getProperty("line.separator"), 1);
         }
     }
 
@@ -765,6 +765,7 @@ public class SoftKeyboard extends InputMethodService
                                 InputConnection ic = getCurrentInputConnection();
                                 if (ic != null){
                                     ic.commitText(barcodeData, 1);
+                                    ic.commitText(System.getProperty("line.separator"), 1);
                                 }
                             }
                             else
