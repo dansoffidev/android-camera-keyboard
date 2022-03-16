@@ -8,56 +8,91 @@
     android:background="@color/colorBlack"
     tools:context=".SoftKeyboard">
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/page_buttons"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
+        android:layout_height="200dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <Button
-            android:id="@+id/button_rescan"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginEnd="10dp"
-            android:layout_weight="1"
-            android:onClick="scanOnClick"
-            android:text="@string/scan" />
+
+        <SurfaceView
+            android:id="@+id/surface_view"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/button_keyboard"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.0"
+            tools:visibility="visible" />
 
         <Button
             android:id="@+id/button_keyboard"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
             android:layout_marginTop="5dp"
-            android:layout_marginEnd="10dp"
-            android:layout_weight="1"
+            android:layout_marginBottom="5dp"
+            android:background="@color/colorPrimary"
             android:onClick="useOnClick"
-            android:text="@string/keyboard" />
+            android:text="@string/keyboard"
+            android:textColor="@color/colorWhite"
+            app:layout_constraintBottom_toTopOf="@+id/button_clear"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/button_clear"
+            app:layout_constraintTop_toTopOf="parent"
+            style="?android:attr/borderlessButtonStyle"/>
 
-<!--        <Button-->
-<!--            android:id="@+id/button_torch"-->
-<!--            android:layout_width="fill_parent"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_marginStart="10dp"-->
-<!--            android:layout_marginTop="5dp"-->
-<!--            android:layout_marginEnd="10dp"-->
-<!--            android:layout_weight="1"-->
-<!--            android:onClick="torchOnClick"-->
-<!--            android:text="@string/torch" />-->
-    </LinearLayout>
+        <Button
+            android:id="@+id/button_clear"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginBottom="5dp"
+            android:background="@color/colorPrimary"
+            android:onClick="clearOnClick"
+            android:text="@string/clear"
+            android:textColor="@color/colorWhite"
+            app:layout_constraintBottom_toTopOf="@+id/button_delete"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/button_delete"
+            app:layout_constraintTop_toBottomOf="@+id/button_keyboard"
+            style="?android:attr/borderlessButtonStyle"/>
 
-    <SurfaceView
-        android:id="@+id/surface_view"
-        android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:visibility="visible"
-        app:layout_constraintTop_toBottomOf="@+id/page_buttons"
-        tools:visibility="visible" />
+        <Button
+            android:id="@+id/button_delete"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginBottom="5dp"
+            android:background="@color/colorPrimary"
+            android:onClick="deleteOnClick"
+            android:text="@string/delete"
+            android:textColor="@color/colorWhite"
+            app:layout_constraintBottom_toTopOf="@+id/button_backspace"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/button_backspace"
+            app:layout_constraintTop_toBottomOf="@+id/button_clear"
+            style="?android:attr/borderlessButtonStyle"/>
+
+        <Button
+            android:id="@+id/button_backspace"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_marginBottom="3dp"
+            android:background="@color/colorPrimary"
+            android:onClick="backSpaceOnClick"
+            android:text="@string/backSpace"
+            android:textColor="@color/colorWhite"
+            style="?android:attr/borderlessButtonStyle"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/button_delete" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
 
     <TextView
         android:id="@+id/barcode_text"
@@ -67,11 +102,9 @@
         android:layout_marginTop="0dp"
         android:layout_marginEnd="10dp"
         android:text="@string/waiting_for_scan"
-        android:textSize="15sp"
         android:textColor="@color/colorWhite"
-        app:layout_constraintTop_toBottomOf="@+id/surface_view"
-        />
-
+        android:textSize="15sp"
+        app:layout_constraintTop_toBottomOf="@+id/page_buttons" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

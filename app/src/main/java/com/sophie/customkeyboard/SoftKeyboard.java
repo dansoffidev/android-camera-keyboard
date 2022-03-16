@@ -26,6 +26,7 @@ import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.KeyboardView;
 import android.os.IBinder;
 import android.text.InputType;
+import android.text.TextUtils;
 import android.text.method.MetaKeyKeyListener;
 import android.util.Base64;
 import android.util.Log;
@@ -684,6 +685,27 @@ public class SoftKeyboard extends InputMethodService
 
     public void useOnClick(View view) {
         setInputView(onCreateInputView());
+    }
+
+    public void deleteOnClick(View view) {
+        InputConnection ic = getCurrentInputConnection();
+        if (ic == null) return;
+        CharSequence selectedText = ic.getSelectedText(0);
+        if (TextUtils.isEmpty(selectedText))
+            ic.deleteSurroundingText(1, 0);
+        else
+            ic.commitText("", 1);
+    }
+
+    public void clearOnClick(View view) {
+        clearData();
+    }
+
+    public void backSpaceOnClick(View view) {
+        InputConnection ic = getCurrentInputConnection();
+        if (ic != null){
+            ic.commitText(" ", 1);
+        }
     }
 
     private void initialiseDetectorsAndSources() {
