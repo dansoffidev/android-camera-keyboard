@@ -43,8 +43,7 @@
             app:layout_constraintBottom_toTopOf="@+id/button_clear"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@+id/button_clear"
-            app:layout_constraintTop_toTopOf="parent"
-            style="?android:attr/borderlessButtonStyle"/>
+            app:layout_constraintTop_toTopOf="parent"/>
 
         <Button
             android:id="@+id/button_clear"
@@ -58,8 +57,7 @@
             app:layout_constraintBottom_toTopOf="@+id/button_delete"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@+id/button_delete"
-            app:layout_constraintTop_toBottomOf="@+id/button_keyboard"
-            style="?android:attr/borderlessButtonStyle"/>
+            app:layout_constraintTop_toBottomOf="@+id/button_keyboard" />
 
         <Button
             android:id="@+id/button_delete"
@@ -67,14 +65,14 @@
             android:layout_height="0dp"
             android:layout_marginBottom="5dp"
             android:background="@color/colorPrimary"
+            android:longClickable="true"
             android:onClick="deleteOnClick"
             android:text="@string/delete"
             android:textColor="@color/colorWhite"
             app:layout_constraintBottom_toTopOf="@+id/button_backspace"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@+id/button_backspace"
-            app:layout_constraintTop_toBottomOf="@+id/button_clear"
-            style="?android:attr/borderlessButtonStyle"/>
+            app:layout_constraintTop_toBottomOf="@+id/button_clear" />
 
         <Button
             android:id="@+id/button_backspace"
@@ -85,10 +83,10 @@
             android:onClick="enterOnClick"
             android:text="@string/enter"
             android:textColor="@color/colorWhite"
-            style="?android:attr/borderlessButtonStyle"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/button_delete" />
+<!--            style="?android:attr/borderlessButtonStyle"-->
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

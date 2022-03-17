@@ -39,6 +39,7 @@ import android.view.View;
 import android.view.Window;
 import android.view.inputmethod.CompletionInfo;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.ExtractedTextRequest;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
 import android.view.inputmethod.InputMethodSubtype;
@@ -47,6 +48,7 @@ import android.view.textservice.SpellCheckerSession;
 import android.view.textservice.SuggestionsInfo;
 import android.view.textservice.TextInfo;
 import android.view.textservice.TextServicesManager;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.core.app.ActivityCompat;
@@ -121,6 +123,8 @@ public class SoftKeyboard extends InputMethodService
     private TextView barcodeText;
     private String barcodeData;
 
+    private Button deleteBtn;
+
     /**
      * Main initialization of the input method component.  Be sure to call
      * to super class.
@@ -132,6 +136,7 @@ public class SoftKeyboard extends InputMethodService
         final TextServicesManager tsm = (TextServicesManager) getSystemService(
                 Context.TEXT_SERVICES_MANAGER_SERVICE);
         mScs = tsm.newSpellCheckerSession(null, null, this, true);
+
     }
     
     /**
@@ -150,8 +155,9 @@ public class SoftKeyboard extends InputMethodService
         mQwertyKeyboard = new LatinKeyboard(this, R.xml.qwerty);
         mSymbolsKeyboard = new LatinKeyboard(this, R.xml.symbols);
         mSymbolsShiftedKeyboard = new LatinKeyboard(this, R.xml.symbols_shift);
+
     }
-    
+
     /**
      * Called by the framework when your view for creating input needs to
      * be generated.  This will be called the first time your input method
@@ -655,6 +661,9 @@ public class SoftKeyboard extends InputMethodService
         setInputView(keyboardView);
         surfaceView = keyboardView.findViewById(R.id.surface_view);
         barcodeText = keyboardView.findViewById(R.id.barcode_text);
+        deleteBtn = (Button) keyboardView.findViewById(R.id.button_delete);
+
+
 
         initialiseDetectorsAndSources();
     }
@@ -718,6 +727,31 @@ public class SoftKeyboard extends InputMethodService
                 .setAutoFocusEnabled(true) //you should add this feature
                 .build();
 
+        deleteBtn.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                // TODO Auto-generated method stub
+//                Log.d("development", "long press");
+//                InputConnection ic = getCurrentInputConnection();
+//                while (ic != null) {
+//                    ic.commitText("", 1);
+//                    ic = getCurrentInputConnection();
+//                    CharSequence selectedText = ic.getSelectedText(0);
+//                    if (TextUtils.isEmpty(selectedText))
+//                        ic.deleteSurroundingText(1, 0);
+//                    else
+//                        ic.commitText("", 1);
+//                }
+                InputConnection inputConnection = getCurrentInputConnection();
+
+                CharSequence currentText = inputConnection.getExtractedText(new ExtractedTextRequest(), 0).text;
+                CharSequence beforeCursorText = inputConnection.getTextBeforeCursor(currentText.length(), 0);
+                CharSequence afterCursorText = inputConnection.getTextAfterCursor(currentText.length(), 0);
+                inputConnection.deleteSurroundingText(beforeCursorText.length(), afterCursorText.length());
+                return true;
+            }
+        });
+
         surfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
             @Override
             public void surfaceCreated(SurfaceHolder holder) {
@@ -748,7 +782,9 @@ public class SoftKeyboard extends InputMethodService
             @Override
             public void receiveDetections(Detector.Detections<Barcode> detections) {
                 final SparseArray<Barcode> barcodes = detections.getDetectedItems();
-                if (barcodes.size() != 0) {
+                Log.d("barcode development", barcodeData);
+                if (barcodes.size() != 0 && barcodeData != "###") {
+                    barcodeData = "###";
                     barcodeText.post(new Runnable() {
                         @Override
                         public void run() {
@@ -760,10 +796,12 @@ public class SoftKeyboard extends InputMethodService
 
                             SharedPreferences sharedPref = getSharedPref();
                             boolean show_data = sharedPref.getBoolean("show_data", true);
+                            Log.d("show_data", String.valueOf(show_data));
+                            Log.d("barcodeData", barcodeData);
                             if (show_data){
                                 barcodeText.setText(barcodeData);
                                 InputConnection ic = getCurrentInputConnection();
-                                if (ic != null){
+                                if (ic != null && barcodeData != ""){
                                     ic.commitText(barcodeData, 1);
                                     ic.commitText(System.getProperty("line.separator"), 1);
                                 }
